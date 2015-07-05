@@ -5,7 +5,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.alejandro.spotifystreamerversion2"
-        minSdkVersion 22
+        minSdkVersion 15
         targetSdkVersion 22
         versionCode 1
         versionName "1.0"
@@ -19,6 +19,12 @@ android {
 
     lintOptions {
         abortOnError false
+    }
+
+    compileOptions {
+        encoding "UTF-8"
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
     }
 }
 repositories {

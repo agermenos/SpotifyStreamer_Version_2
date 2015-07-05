@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">SpotifyStreamer</string>
-    <string name="no_artist">Did not find an Artist</string>
+    <string name="no_artist">Did not find an Artist. Have you tried being less specific?</string>
     <string name="action_settings">Settings</string>
+    <string name="title_activity_top_hits">TopHitsActivity</string>
+    <string name="hello_world">Hello world!</string>
 </resources>
