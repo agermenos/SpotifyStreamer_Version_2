@@ -2,6 +2,7 @@ package com.alejandro.spotifystreamer.activities;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,6 +13,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.alejandro.spotifystreamer.adapters.TopHitsAdapter;
+import com.alejandro.spotifystreamer.helpers.ParcelableTracks;
 import com.example.alejandro.spotifystreamer.R;
 
 import java.util.ArrayList;
@@ -32,6 +34,7 @@ import retrofit.client.Response;
  */
 public class TopHitsActivityFragment extends Fragment {
 
+    private static final String KEY="tracks";
     private static final String LOG_TAG = TopHitsActivityFragment.class.getSimpleName();
     TopHitsAdapter topHitsAdapter;
 
@@ -41,10 +44,14 @@ public class TopHitsActivityFragment extends Fragment {
         // Get the message from the intent
         Intent intent = getActivity().getIntent();
         getTopHits(intent.getStringExtra(Intent.EXTRA_TEXT));
-        topHitsAdapter = new TopHitsAdapter(this.getActivity(), new ArrayList<Track>());
+        topHitsAdapter = new TopHitsAdapter(this.getActivity(), new ArrayList<ParcelableTracks>());
         View rootView = inflater.inflate(R.layout.fragment_top_hits, container, false);
         ListView listView = (ListView)rootView.findViewById(R.id.listview_hits);
         listView.setAdapter(topHitsAdapter);
+        if (savedInstanceState!=null && savedInstanceState.containsKey(KEY)){
+            List<ParcelableTracks> pTracks = savedInstanceState.getParcelableArrayList(KEY);
+            updateAdapter(pTracks);
+        }
         return rootView;
     }
 
@@ -63,7 +70,7 @@ public class TopHitsActivityFragment extends Fragment {
         spotify.getArtistTopTrack(artistId, options, new Callback<Tracks>() {
             @Override
             public void success(Tracks tracks, Response response) {
-                callback(tracks.tracks);
+                callback(convertToParcelableTracks(tracks.tracks));
             }
 
             @Override
@@ -73,16 +80,37 @@ public class TopHitsActivityFragment extends Fragment {
         });
     }
 
+    private List<ParcelableTracks> convertToParcelableTracks(List<Track> tracks) {
+        List<ParcelableTracks> pTracks = new ArrayList<>();
+        for (Track t: tracks){
+            pTracks.add(new ParcelableTracks(t));
+        }
+        return pTracks;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        List<ParcelableTracks> pTracks = retrieveTracksFromAdapter(topHitsAdapter);
+        outState.putParcelableArrayList(KEY, (ArrayList<? extends Parcelable>) pTracks);
+        super.onSaveInstanceState(outState);
+    }
+
+    private List<ParcelableTracks> retrieveTracksFromAdapter(TopHitsAdapter topHitsAdapter) {
+        List<ParcelableTracks> returnList = new ArrayList<>();
+        for (int k=0; k<topHitsAdapter.getCount(); k++){
+           returnList.add(topHitsAdapter.getItem(k));
+        }
+        return returnList;
+    }
+
     /**
      * The callback updates the adapter.
      * It's private, since no one outside the class should call it.
      * @param tracks
      */
-    private void callback(List<Track> tracks) {
+    private void callback(List<ParcelableTracks> tracks) {
         if(tracks!=null && tracks.size()>0) {
-            topHitsAdapter.clear();
-            topHitsAdapter.addAll(tracks);
-            topHitsAdapter.notifyDataSetChanged();
+            updateAdapter(tracks);
         }
         else {
             Context context = this.getActivity();
@@ -91,5 +119,15 @@ public class TopHitsActivityFragment extends Fragment {
             Toast toast = Toast.makeText(context, R.string.no_hits, duration);
             toast.show();
         }
+    }
+
+    /**
+     * Cleans and updates the Adapter with the new list of tracks
+     * @param tracks
+     */
+    private void updateAdapter(List<ParcelableTracks> tracks){
+        topHitsAdapter.clear();
+        topHitsAdapter.addAll(tracks);
+        topHitsAdapter.notifyDataSetChanged();
     }
 }
