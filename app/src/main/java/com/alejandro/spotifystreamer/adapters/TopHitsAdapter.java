@@ -14,33 +14,36 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 
 import kaaes.spotify.webapi.android.models.Artist;
+import kaaes.spotify.webapi.android.models.Track;
 
 /**
  * Created by Alejandro on 7/5/2015.
  */
-public class TopHitsAdapter extends ArrayAdapter<Artist> {
+public class TopHitsAdapter extends ArrayAdapter<Track> {
 
-    public TopHitsAdapter(Context context, ArrayList<Artist> artists) {
-        super(context, 0, artists);
+    public TopHitsAdapter(Context context, ArrayList<Track> tracks) {
+        super(context, 0, tracks);
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         // Get the data item for this position
-        Artist artist = getItem(position);
+        Track track = getItem(position);
         // Check if an existing view is being reused, otherwise inflate the view
         if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_item_artist, parent, false);
         }
         // Lookup view for data population
-        TextView tvName = (TextView) convertView.findViewById(R.id.artist_name);
-        ImageView icon = (ImageView) convertView.findViewById(R.id.artist_icon);
+        TextView tvSong = (TextView) convertView.findViewById(R.id.text_song);
+        TextView tvAlbum = (TextView) convertView.findViewById(R.id.text_album);
+        ImageView icAlbum = (ImageView) convertView.findViewById(R.id.album_icon);
         // Populate the data into the template view using the data object
-        tvName.setText(artist.name);
-        if (artist!=null) {
-            if (artist.images!=null && !artist.images.isEmpty()) {
-                String url = artist.images.get(0).url;
-                Picasso.with(getContext()).load(url).into(icon);
+        tvSong.setText(track.name);
+        tvAlbum.setText(track.album.name);
+        if (track!=null) {
+            if (track.album.images!=null && !track.album.images.isEmpty()) {
+                String url = track.album.images.get(0).url;
+                Picasso.with(getContext()).load(url).into(icAlbum);
             }
         }
         // Return the completed view to render on screen

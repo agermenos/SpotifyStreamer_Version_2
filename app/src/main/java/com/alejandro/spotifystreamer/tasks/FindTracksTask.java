@@ -18,7 +18,6 @@ public class FindTracksTask extends AsyncTask<String, Void, List<Track>> {
 
     private TopHitsActivityFragment caller = null;
 
-
     public FindTracksTask(TopHitsActivityFragment caller){
         super();
         this.caller=caller;
