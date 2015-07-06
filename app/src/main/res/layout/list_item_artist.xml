@@ -21,6 +21,6 @@
         android:layout_marginLeft="20dp"
         android:gravity="center"
         android:fontFamily="sans-serif-condensed"
-        android:textSize="20sp"
+        android:textAppearance="?android:attr/textAppearanceListItem"
         android:text="abc" />
 </LinearLayout>

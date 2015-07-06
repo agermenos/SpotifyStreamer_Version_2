@@ -45,10 +45,6 @@ public class MainActivityFragment extends Fragment {
         EditText queryText = (EditText)rootView.findViewById(R.id.query_text);
         queryText.addTextChangedListener(new CustomTextWatcher(this));
 
-        final ArrayList<Artist> mArtists = new ArrayList<>();
-        Artist one = new Artist();one.name="Alex";
-        Artist two = new Artist();two.name="Fito";
-        mArtists.add(one); mArtists.add(two);
         mArtistAdapter = new ArtistAdapter(this.getActivity(), new ArrayList<Artist>());
 
         final ListView listView = (ListView)rootView.findViewById(R.id.listview_artists);
@@ -57,7 +53,7 @@ public class MainActivityFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(getActivity(), TopHitsActivity.class)
-                        .putExtra(Intent.EXTRA_TEXT, mArtists.get(position).id);
+                        .putExtra(Intent.EXTRA_TEXT, mArtistAdapter.getItem(position).id);
                 getActivity().startActivity(intent);
             }
         });

@@ -27,14 +27,15 @@
             android:layout_marginLeft="20dp"
             android:gravity="center"
             android:fontFamily="sans-serif-condensed"
-            android:textSize="20sp"
+            android:textAppearance="?android:attr/textAppearanceListItem"
             android:text="abc" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textAppearance="?android:attr/textAppearanceListItem"
             android:text="Medium Text"
+            android:layout_marginLeft="20dp"
             android:id="@+id/text_album" />
     </LinearLayout>
 </LinearLayout>
