@@ -49,7 +49,7 @@ public class MainActivityFragment extends Fragment {
         Artist one = new Artist();one.name="Alex";
         Artist two = new Artist();two.name="Fito";
         mArtists.add(one); mArtists.add(two);
-        mArtistAdapter = new ArtistAdapter(this.getActivity(), mArtists);
+        mArtistAdapter = new ArtistAdapter(this.getActivity(), new ArrayList<Artist>());
 
         final ListView listView = (ListView)rootView.findViewById(R.id.listview_artists);
         listView.setAdapter(mArtistAdapter);

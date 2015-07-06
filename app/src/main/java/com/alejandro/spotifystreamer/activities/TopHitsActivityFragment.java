@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 
 import com.alejandro.spotifystreamer.adapters.TopHitsAdapter;
+import com.alejandro.spotifystreamer.tasks.FindTracksTask;
 import com.example.alejandro.spotifystreamer.R;
 
 import java.util.ArrayList;
@@ -27,7 +28,6 @@ import kaaes.spotify.webapi.android.models.Tracks;
 public class TopHitsActivityFragment extends Fragment {
 
     private static final String LOG_TAG = TopHitsActivityFragment.class.getSimpleName();
-    private List<Track> lTracks=null;
     TopHitsAdapter topHitsAdapter;
 
 
@@ -36,12 +36,10 @@ public class TopHitsActivityFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Get the message from the intent
         Intent intent = getActivity().getIntent();
-
         String artistId = intent.getStringExtra(Intent.EXTRA_TEXT);
-        List<Track> lTracks = getTracks(artistId);
-        ArrayList<Track> mTracks = new ArrayList<>();
-        mTracks.addAll(lTracks);
-        topHitsAdapter = new TopHitsAdapter(this.getActivity(), mTracks);
+        FindTracksTask findTracksTask = new FindTracksTask(this);
+        findTracksTask.execute(artistId);
+        topHitsAdapter = new TopHitsAdapter(this.getActivity(), new ArrayList<Track>());
         View rootView = inflater.inflate(R.layout.fragment_top_hits, container, false);
         ListView listView = (ListView)rootView.findViewById(R.id.listview_hits);
         listView.setAdapter(topHitsAdapter);
@@ -60,4 +58,9 @@ public class TopHitsActivityFragment extends Fragment {
         return tracks.tracks;
     }
 
+    public void callback(List<Track> tracks) {
+        topHitsAdapter.clear();
+        topHitsAdapter.addAll(tracks);
+        topHitsAdapter.notifyDataSetChanged();
+    }
 }
