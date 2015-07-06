@@ -1,5 +1,6 @@
 package com.alejandro.spotifystreamer.activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -8,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.alejandro.spotifystreamer.adapters.TopHitsAdapter;
 import com.example.alejandro.spotifystreamer.R;
@@ -38,7 +40,20 @@ public class TopHitsActivityFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Get the message from the intent
         Intent intent = getActivity().getIntent();
-        String artistId = intent.getStringExtra(Intent.EXTRA_TEXT);
+        getTopHits(intent.getStringExtra(Intent.EXTRA_TEXT));
+        topHitsAdapter = new TopHitsAdapter(this.getActivity(), new ArrayList<Track>());
+        View rootView = inflater.inflate(R.layout.fragment_top_hits, container, false);
+        ListView listView = (ListView)rootView.findViewById(R.id.listview_hits);
+        listView.setAdapter(topHitsAdapter);
+        return rootView;
+    }
+
+    /**
+     * Retrieves top tracks through spotify api.
+     * It calls a local callback method, which updates the adapter.
+     * @param artistId
+     */
+    private void getTopHits(String artistId){
         SpotifyApi api = new SpotifyApi();
         SpotifyService spotify = api.getService();
         final Map<String, Object> options = new HashMap<String, Object>();
@@ -56,18 +71,25 @@ public class TopHitsActivityFragment extends Fragment {
                 Log.e(LOG_TAG, error.getMessage());
             }
         });
-        topHitsAdapter = new TopHitsAdapter(this.getActivity(), new ArrayList<Track>());
-        View rootView = inflater.inflate(R.layout.fragment_top_hits, container, false);
-        ListView listView = (ListView)rootView.findViewById(R.id.listview_hits);
-        listView.setAdapter(topHitsAdapter);
-        return rootView;
     }
 
-    public void callback(List<Track> tracks) {
-        if(tracks!=null) {
+    /**
+     * The callback updates the adapter.
+     * It's private, since no one outside the class should call it.
+     * @param tracks
+     */
+    private void callback(List<Track> tracks) {
+        if(tracks!=null && tracks.size()>0) {
             topHitsAdapter.clear();
             topHitsAdapter.addAll(tracks);
             topHitsAdapter.notifyDataSetChanged();
+        }
+        else {
+            Context context = this.getActivity();
+            int duration = Toast.LENGTH_SHORT;
+
+            Toast toast = Toast.makeText(context, R.string.no_hits, duration);
+            toast.show();
         }
     }
 }

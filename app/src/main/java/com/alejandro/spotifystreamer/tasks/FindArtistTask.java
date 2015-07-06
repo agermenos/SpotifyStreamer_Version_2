@@ -33,6 +33,6 @@ public class FindArtistTask extends AsyncTask<String, Void, List<Artist>> {
     @Override
     protected void onPostExecute(List<Artist> artists) {
         super.onPostExecute(artists);
-        caller.callbackArtists(artists);
+        caller.callback(artists);
     }
 }

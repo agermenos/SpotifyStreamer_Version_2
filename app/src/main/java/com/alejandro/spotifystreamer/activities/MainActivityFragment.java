@@ -61,8 +61,12 @@ public class MainActivityFragment extends Fragment {
         return rootView;
     }
 
-    public void callbackArtists(List<Artist> artists){
-
+    /**
+     * Updates the artist adapter
+     * It's public, since an outside class (even out of the package) calls it
+     * @param artists
+     */
+    public void callback(List<Artist> artists){
         // Create the adapter to convert the array to views
         if (mArtistAdapter!=null) {
             mArtistAdapter.clear();
@@ -83,9 +87,5 @@ public class MainActivityFragment extends Fragment {
             Toast toast = Toast.makeText(context, R.string.no_artist, duration);
             toast.show();
         }
-    }
-
-    public void callbackTracks(List<Track> tracks) {
-
     }
 }
