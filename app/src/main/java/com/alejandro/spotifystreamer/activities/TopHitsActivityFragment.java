@@ -43,7 +43,9 @@ public class TopHitsActivityFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Get the message from the intent
         Intent intent = getActivity().getIntent();
-        getTopHits(intent.getStringExtra(Intent.EXTRA_TEXT));
+        if( savedInstanceState == null){
+            getTopHits(intent.getStringExtra(Intent.EXTRA_TEXT));
+        }
         topHitsAdapter = new TopHitsAdapter(this.getActivity(), new ArrayList<ParcelableTracks>());
         View rootView = inflater.inflate(R.layout.fragment_top_hits, container, false);
         ListView listView = (ListView)rootView.findViewById(R.id.listview_hits);

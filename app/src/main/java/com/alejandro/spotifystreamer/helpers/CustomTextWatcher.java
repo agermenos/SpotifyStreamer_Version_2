@@ -1,5 +1,6 @@
 package com.alejandro.spotifystreamer.helpers;
 
+import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 
@@ -14,7 +15,7 @@ public class CustomTextWatcher implements TextWatcher {
 
     public CustomTextWatcher(MainActivityFragment maf){
         super();
-        myFragment = maf;
+        this.myFragment = maf;
     }
 
     public void beforeTextChanged(CharSequence s, int start,

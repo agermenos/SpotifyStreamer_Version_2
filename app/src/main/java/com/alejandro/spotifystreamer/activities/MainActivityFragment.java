@@ -30,8 +30,6 @@ public class MainActivityFragment extends Fragment {
 
     private static final String LOG_TAG = MainActivityFragment.class.getSimpleName();
     ArtistAdapter mArtistAdapter;
-    TopHitsAdapter mTopHitsAdapter;
-
 
     public MainActivityFragment() {
     }
@@ -74,18 +72,21 @@ public class MainActivityFragment extends Fragment {
         else{
             mArtistAdapter = new ArtistAdapter(this.getActivity(), new ArrayList<Artist>());
         }
+        if (artists!=null) {updateAdapter(artists);}
+        else {
+            Context context = this.getActivity();
+            int duration = Toast.LENGTH_SHORT;
+            Toast toast = Toast.makeText(context, R.string.no_artist, duration);
+            toast.show();
+        }
+    }
+
+    private void updateAdapter(List<Artist> artists) {
         if (artists!=null && artists.size()>0) {
             ArrayList<Artist> mArtists = new ArrayList<>();
             mArtists.addAll(artists);
             mArtistAdapter.addAll(mArtists);
             mArtistAdapter.notifyDataSetChanged();
-        }
-        else {
-            Context context = this.getActivity();
-            int duration = Toast.LENGTH_SHORT;
-
-            Toast toast = Toast.makeText(context, R.string.no_artist, duration);
-            toast.show();
         }
     }
 }

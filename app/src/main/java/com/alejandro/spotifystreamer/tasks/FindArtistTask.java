@@ -23,7 +23,7 @@ public class FindArtistTask extends AsyncTask<String, Void, List<Artist>> {
 
     public FindArtistTask(MainActivityFragment fragment){
         super();
-        caller = fragment;
+        this.caller = fragment;
     }
 
     @Override
