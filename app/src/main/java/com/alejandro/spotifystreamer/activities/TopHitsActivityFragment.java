@@ -9,10 +9,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import com.alejandro.spotifystreamer.adapters.TopHitsAdapter;
+import com.alejandro.spotifystreamer.helpers.HelperTrack;
 import com.alejandro.spotifystreamer.helpers.ParcelableTracks;
 import com.example.alejandro.spotifystreamer.R;
 
@@ -33,7 +35,6 @@ import retrofit.client.Response;
  * A placeholder fragment containing a simple view.
  */
 public class TopHitsActivityFragment extends Fragment {
-
     private static final String KEY="tracks";
     private static final String LOG_TAG = TopHitsActivityFragment.class.getSimpleName();
     TopHitsAdapter topHitsAdapter;
@@ -54,6 +55,19 @@ public class TopHitsActivityFragment extends Fragment {
             List<ParcelableTracks> pTracks = savedInstanceState.getParcelableArrayList(KEY);
             updateAdapter(pTracks);
         }
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent = new Intent(getActivity(), PlayerActivity.class)
+                        .putExtra(HelperTrack.ID, topHitsAdapter.getItem(position).id)
+                        .putExtra(HelperTrack.ARTIST, topHitsAdapter.getItem(position).artist)
+                        .putExtra(HelperTrack.NAME, topHitsAdapter.getItem(position).name)
+                        .putExtra(HelperTrack.URL, topHitsAdapter.getItem(position).url)
+                        .putExtra(HelperTrack.ALBUM, topHitsAdapter.getItem(position).album)
+                        .putExtra(HelperTrack.PREVIEW_URL, topHitsAdapter.getItem(position).previewUrl);
+                getActivity().startActivity(intent);
+            }
+        });
         return rootView;
     }
 

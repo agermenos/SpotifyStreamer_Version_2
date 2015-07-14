@@ -22,6 +22,10 @@
             android:name="com.alejandro.spotifystreamer.activities.TopHitsActivity"
             android:label="@string/title_activity_top_hits" >
         </activity>
+        <activity
+            android:name="com.alejandro.spotifystreamer.activities.PlayerActivity"
+            android:label="@string/title_activity_player" >
+        </activity>
     </application>
 
 </manifest>
