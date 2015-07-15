@@ -26,6 +26,7 @@ public class PlayerActivityFragment extends Fragment {
     private boolean isPlaying=true;
     private int playbackPosition;
     private final static String LOG_TAG=PlayerActivityFragment.class.getSimpleName();
+    private TryMusicTask tryMusicTask;
 
     public PlayerActivityFragment() {
     }
@@ -42,7 +43,10 @@ public class PlayerActivityFragment extends Fragment {
         }
         Intent intent = getActivity().getIntent();
         HelperTrack track=new HelperTrack(intent);
-        TryMusicTask tryMusicTask = new TryMusicTask();
+        if (tryMusicTask!=null) {
+            tryMusicTask.cancel(true);
+        }
+        tryMusicTask = new TryMusicTask();
 
         // Finding stuff on the layout
         View rootView = inflater.inflate(R.layout.fragment_player, container, false);
