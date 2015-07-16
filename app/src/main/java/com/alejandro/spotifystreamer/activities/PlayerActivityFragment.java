@@ -12,7 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.alejandro.spotifystreamer.helpers.ParcelableTracks;
@@ -21,13 +21,14 @@ import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A placeholder fragment containing a simple view.
  */
 public class PlayerActivityFragment extends Fragment {
     private static MediaPlayer mediaPlayer;
-    private static ProgressBar progressBar;
+    private static SeekBar seekBar;
     private boolean isPlaying=true;
     private final static String LOG_TAG=PlayerActivityFragment.class.getSimpleName();
     private static final int TIME_DIFFERENTIAL=50;
@@ -37,10 +38,13 @@ public class PlayerActivityFragment extends Fragment {
     private TextView album;
     private TextView song;
     private TextView artist;
+    private TextView startTime;
+    private TextView endTime;
     private ImageView picture;
     private View rootView;
     private int currentSong;
     private static int clocksTicking=0;
+    private boolean userTracking;
 
     public PlayerActivityFragment() {
     }
@@ -71,8 +75,11 @@ public class PlayerActivityFragment extends Fragment {
         ImageButton prevButton = (ImageButton)rootView.findViewById(R.id.rewind_button);
         playButton = (ImageButton)rootView.findViewById(R.id.play_button);
         pauseButton = (ImageButton)rootView.findViewById(R.id.pause_button);
+        startTime = (TextView) rootView.findViewById(R.id.text_player_start_time);
+        endTime = (TextView) rootView.findViewById(R.id.text_player_end_time);
+        startTime.setText(getTime(0));
         ImageButton forwardButton = (ImageButton)rootView.findViewById(R.id.forward_button);
-        progressBar = (ProgressBar)rootView.findViewById(R.id.progressBar);
+        seekBar = (SeekBar)rootView.findViewById(R.id.seekBar);
         startMediaPlayer(pTrack.previewUrl);
 
         loadPlayerUI(pTrack);
@@ -80,6 +87,24 @@ public class PlayerActivityFragment extends Fragment {
         /**
          *          Setting behavior
          */
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                userTracking=true;
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                mediaPlayer.seekTo(seekBar.getProgress());
+                if (!isPlaying) startSong();
+                userTracking=false;
+                setPlayPause();
+            }
+        });
         prevButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -99,8 +124,8 @@ public class PlayerActivityFragment extends Fragment {
         playButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                    isPlaying=true;
                     startSong();
-                    mediaPlayer.start();
                     setPlayPause();
             }
         });
@@ -108,6 +133,7 @@ public class PlayerActivityFragment extends Fragment {
         pauseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                isPlaying=false;
                 mediaPlayer.pause();
                 setPlayPause();
             }
@@ -121,6 +147,14 @@ public class PlayerActivityFragment extends Fragment {
         });
 
         return rootView;
+    }
+
+    private String getTime(int milliseconds) {
+        return String.format("%02d:%02d",
+                TimeUnit.MILLISECONDS.toMinutes(milliseconds),
+                TimeUnit.MILLISECONDS.toSeconds(milliseconds) -
+                TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(milliseconds))
+        );
     }
 
     private void goNextSong() {
@@ -163,12 +197,15 @@ public class PlayerActivityFragment extends Fragment {
         setPlayPause();
         try {
             mediaPlayer.setDataSource(url);
-            mediaPlayer.prepareAsync(); // might take long! (for buffering, etc)
+            mediaPlayer.prepare();
+
+
 
             mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
-                    progressBar.setMax(mediaPlayer.getDuration());
+                    endTime.setText(getTime(mediaPlayer.getDuration()));
+                    seekBar.setMax(mediaPlayer.getDuration());
                     startSong();
                 }
             });
@@ -195,8 +232,9 @@ public class PlayerActivityFragment extends Fragment {
         clocksTicking++;
         new CountDownTimer(duration, TIME_DIFFERENTIAL) {
             public void onTick(long millisUntilFinished) {
-                if (mediaPlayer.isPlaying()) {
-                    progressBar.setProgress(mediaPlayer.getCurrentPosition());
+                if (mediaPlayer.isPlaying() && !userTracking) {
+                    seekBar.setProgress(mediaPlayer.getCurrentPosition());
+                    startTime.setText(getTime(mediaPlayer.getCurrentPosition()));
                 }
             }
             public void onFinish() {
