@@ -14,7 +14,6 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.alejandro.spotifystreamer.adapters.TopHitsAdapter;
-import com.alejandro.spotifystreamer.helpers.HelperTrack;
 import com.alejandro.spotifystreamer.helpers.ParcelableTracks;
 import com.example.alejandro.spotifystreamer.R;
 
@@ -38,6 +37,7 @@ public class TopHitsActivityFragment extends Fragment {
     private static final String KEY="tracks";
     private static final String LOG_TAG = TopHitsActivityFragment.class.getSimpleName();
     TopHitsAdapter topHitsAdapter;
+    List<ParcelableTracks> pTracks;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -52,19 +52,21 @@ public class TopHitsActivityFragment extends Fragment {
         ListView listView = (ListView)rootView.findViewById(R.id.listview_hits);
         listView.setAdapter(topHitsAdapter);
         if (savedInstanceState!=null && savedInstanceState.containsKey(KEY)){
-            List<ParcelableTracks> pTracks = savedInstanceState.getParcelableArrayList(KEY);
+            pTracks = savedInstanceState.getParcelableArrayList(KEY);
             updateAdapter(pTracks);
         }
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if (pTracks==null) {
+                    pTracks = new ArrayList<>();
+                    for (int k=0; k<topHitsAdapter.getCount(); k++) {
+                        pTracks.add(topHitsAdapter.getItem(k));
+                    }
+                }
                 Intent intent = new Intent(getActivity(), PlayerActivity.class)
-                        .putExtra(HelperTrack.ID, topHitsAdapter.getItem(position).id)
-                        .putExtra(HelperTrack.ARTIST, topHitsAdapter.getItem(position).artist)
-                        .putExtra(HelperTrack.NAME, topHitsAdapter.getItem(position).name)
-                        .putExtra(HelperTrack.URL, topHitsAdapter.getItem(position).url)
-                        .putExtra(HelperTrack.ALBUM, topHitsAdapter.getItem(position).album)
-                        .putExtra(HelperTrack.PREVIEW_URL, topHitsAdapter.getItem(position).previewUrl);
+                        .putExtra("position", position)
+                        .putParcelableArrayListExtra("tracks", new ArrayList<Parcelable>(pTracks));
                 getActivity().startActivity(intent);
             }
         });

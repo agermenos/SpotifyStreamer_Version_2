@@ -1,9 +1,12 @@
 package com.alejandro.spotifystreamer.activities;
 
 import android.content.Intent;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.os.CountDownTimer;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,21 +15,32 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.alejandro.spotifystreamer.helpers.HelperTrack;
-import com.alejandro.spotifystreamer.tasks.TryMusicTask;
+import com.alejandro.spotifystreamer.helpers.ParcelableTracks;
 import com.example.alejandro.spotifystreamer.R;
 import com.squareup.picasso.Picasso;
+
+import java.io.IOException;
+import java.util.List;
 
 /**
  * A placeholder fragment containing a simple view.
  */
 public class PlayerActivityFragment extends Fragment {
-    private MediaPlayer mediaPlayer;
-    private ProgressBar progressBar;
+    private static MediaPlayer mediaPlayer;
+    private static ProgressBar progressBar;
     private boolean isPlaying=true;
-    private int playbackPosition;
     private final static String LOG_TAG=PlayerActivityFragment.class.getSimpleName();
-    private TryMusicTask tryMusicTask;
+    private static final int TIME_DIFFERENTIAL=50;
+    private ImageButton playButton;
+    private ImageButton pauseButton;
+    private List<ParcelableTracks> pTracks;
+    private TextView album;
+    private TextView song;
+    private TextView artist;
+    private ImageView picture;
+    private View rootView;
+    private int currentSong;
+    private static int clocksTicking=0;
 
     public PlayerActivityFragment() {
     }
@@ -38,79 +52,101 @@ public class PlayerActivityFragment extends Fragment {
             mediaPlayer = new MediaPlayer();
         }
         else {
-            mediaPlayer.stop();
-            mediaPlayer.reset();
+            if (mediaPlayer.isPlaying()) {
+                mediaPlayer.stop();
+                mediaPlayer.reset();
+            }
         }
         Intent intent = getActivity().getIntent();
-        HelperTrack track=new HelperTrack(intent);
-        if (tryMusicTask!=null) {
-            tryMusicTask.cancel(true);
-        }
-        tryMusicTask = new TryMusicTask();
+        pTracks = intent.getParcelableArrayListExtra("tracks");
+        currentSong = intent.getIntExtra("position", 0);
+        ParcelableTracks pTrack = pTracks.get(currentSong);
 
         // Finding stuff on the layout
-        View rootView = inflater.inflate(R.layout.fragment_player, container, false);
-        TextView album = (TextView)rootView.findViewById(R.id.text_player_album);
-        TextView song = (TextView)rootView.findViewById(R.id.text_player_song);
-        TextView artist = (TextView)rootView.findViewById(R.id.text_player_artist);
-        ImageView picture = (ImageView)rootView.findViewById(R.id.album_image);
+        rootView = inflater.inflate(R.layout.fragment_player, container, false);
+        album = (TextView)rootView.findViewById(R.id.text_player_album);
+        song = (TextView)rootView.findViewById(R.id.text_player_song);
+        artist = (TextView)rootView.findViewById(R.id.text_player_artist);
+        picture = (ImageView)rootView.findViewById(R.id.album_image);
         ImageButton prevButton = (ImageButton)rootView.findViewById(R.id.rewind_button);
-        final ImageButton playButton = (ImageButton)rootView.findViewById(R.id.play_button);
-        final ImageButton pauseButton = (ImageButton)rootView.findViewById(R.id.pause_button);
+        playButton = (ImageButton)rootView.findViewById(R.id.play_button);
+        pauseButton = (ImageButton)rootView.findViewById(R.id.pause_button);
         ImageButton forwardButton = (ImageButton)rootView.findViewById(R.id.forward_button);
         progressBar = (ProgressBar)rootView.findViewById(R.id.progressBar);
-        tryMusicTask.execute(track.getPreviewUrl(), mediaPlayer, progressBar);
+        startMediaPlayer(pTrack.previewUrl);
 
-        // Attaching values
-        song.setText(track.getName());
-        album.setText(track.getAlbum());
-        artist.setText(track.getArtist());
-        Picasso.with(getActivity()).load(track.getUrl()).into(picture);
+        loadPlayerUI(pTrack);
 
         /**
          *          Setting behavior
          */
-
         prevButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mediaPlayer.seekTo(0);
-                mediaPlayer.start();
+                mediaPlayer.reset();
+                if (currentSong>0) {
+                    currentSong--;
+                }
+                else {
+                    currentSong=pTracks.size()-1;
+                }
+                ParcelableTracks pTrack = pTracks.get(currentSong);
+                loadPlayerUI(pTrack);
+                startMediaPlayer(pTrack.previewUrl);
             }
         });
 
         playButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mediaPlayer.seekTo(playbackPosition);
-                mediaPlayer.start();
-                isPlaying=true;
-                setPlayPause(playButton, pauseButton);
+                    startSong();
+                    mediaPlayer.start();
+                    setPlayPause();
             }
         });
 
         pauseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                playbackPosition = mediaPlayer.getCurrentPosition();
                 mediaPlayer.pause();
-                isPlaying=false;
-                setPlayPause(playButton, pauseButton);
+                setPlayPause();
             }
         });
 
         forwardButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mediaPlayer.seekTo(mediaPlayer.getDuration());
+                goNextSong();
             }
         });
 
-        setPlayPause(playButton, pauseButton);
         return rootView;
     }
 
-    private void setPlayPause(View playButton, View pauseButton){
+    private void goNextSong() {
+        mediaPlayer.reset();
+        if (currentSong==pTracks.size() - 1) {
+            currentSong=0;
+        }
+        else {
+            currentSong++;
+        }
+        ParcelableTracks pTrack = pTracks.get(currentSong);
+        loadPlayerUI(pTrack);
+        startMediaPlayer(pTrack.previewUrl);
+    }
+
+    private void loadPlayerUI(ParcelableTracks pTrack) {
+        song.setText(pTrack.name);
+        album.setText(pTrack.album);
+        artist.setText(pTrack.artist);
+        Picasso.with(getActivity()).load(pTrack.url).into(picture);
+    }
+
+    /**
+     * Automates hiding/showing play and pause buttons
+     */
+    private void setPlayPause(){
         if (isPlaying) {
             playButton.setVisibility(ImageButton.GONE);
             pauseButton.setVisibility(ImageButton.VISIBLE);
@@ -119,6 +155,58 @@ public class PlayerActivityFragment extends Fragment {
             playButton.setVisibility(ImageButton.VISIBLE);
             pauseButton.setVisibility(ImageButton.GONE);
         }
+    }
+
+    private void startMediaPlayer(String url){
+        isPlaying=true;
+        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        setPlayPause();
+        try {
+            mediaPlayer.setDataSource(url);
+            mediaPlayer.prepareAsync(); // might take long! (for buffering, etc)
+
+            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mp) {
+                    progressBar.setMax(mediaPlayer.getDuration());
+                    startSong();
+                }
+            });
+
+            mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                @Override
+                public boolean onError(MediaPlayer mp, int what, int extra) {
+                 Log.e(LOG_TAG, "Error searching for the track: " + what + ":"+ extra);
+                 return false;
+                }
+            });
+        }
+        catch (IOException ioException) {
+            Log.e(LOG_TAG, ioException.getMessage());
+        }
+    }
+
+    /**
+     * Starts the player, and at the same time, starts the progress bar
+     */
+    private void startSong() {
+        isPlaying = true;
+        int duration = mediaPlayer.getDuration() - mediaPlayer.getCurrentPosition();
+        clocksTicking++;
+        new CountDownTimer(duration, TIME_DIFFERENTIAL) {
+            public void onTick(long millisUntilFinished) {
+                if (mediaPlayer.isPlaying()) {
+                    progressBar.setProgress(mediaPlayer.getCurrentPosition());
+                }
+            }
+            public void onFinish() {
+                clocksTicking--;
+                if (clocksTicking==0) {
+                    goNextSong();
+                }
+            }
+        }.start();
+        mediaPlayer.start();
     }
 
 }
