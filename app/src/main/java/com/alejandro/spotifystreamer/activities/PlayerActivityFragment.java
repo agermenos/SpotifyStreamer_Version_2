@@ -42,15 +42,14 @@ public class PlayerActivityFragment extends Fragment {
     private TextView endTime;
     private ImageView picture;
     private View rootView;
-    private int currentSong;
-    private static int clocksTicking=0;
-    private boolean userTracking;
+    private static int currentSong;
+    private static boolean userTracking;
 
     public PlayerActivityFragment() {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public synchronized View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         if (mediaPlayer==null) {
             mediaPlayer = new MediaPlayer();
@@ -77,6 +76,7 @@ public class PlayerActivityFragment extends Fragment {
         pauseButton = (ImageButton)rootView.findViewById(R.id.pause_button);
         startTime = (TextView) rootView.findViewById(R.id.text_player_start_time);
         endTime = (TextView) rootView.findViewById(R.id.text_player_end_time);
+        endTime.setText(getTime(0));
         startTime.setText(getTime(0));
         ImageButton forwardButton = (ImageButton)rootView.findViewById(R.id.forward_button);
         seekBar = (SeekBar)rootView.findViewById(R.id.seekBar);
@@ -90,6 +90,7 @@ public class PlayerActivityFragment extends Fragment {
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                startTime.setText(getTime(seekBar.getProgress()));
             }
 
             @Override
@@ -100,7 +101,7 @@ public class PlayerActivityFragment extends Fragment {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 mediaPlayer.seekTo(seekBar.getProgress());
-                if (!isPlaying) startSong();
+                startSong();
                 userTracking=false;
                 setPlayPause();
             }
@@ -193,11 +194,12 @@ public class PlayerActivityFragment extends Fragment {
 
     private void startMediaPlayer(String url){
         isPlaying=true;
+        userTracking = false;
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         setPlayPause();
         try {
             mediaPlayer.setDataSource(url);
-            mediaPlayer.prepare();
+            mediaPlayer.prepareAsync();
 
 
 
@@ -229,7 +231,6 @@ public class PlayerActivityFragment extends Fragment {
     private void startSong() {
         isPlaying = true;
         int duration = mediaPlayer.getDuration() - mediaPlayer.getCurrentPosition();
-        clocksTicking++;
         new CountDownTimer(duration, TIME_DIFFERENTIAL) {
             public void onTick(long millisUntilFinished) {
                 if (mediaPlayer.isPlaying() && !userTracking) {
@@ -238,8 +239,8 @@ public class PlayerActivityFragment extends Fragment {
                 }
             }
             public void onFinish() {
-                clocksTicking--;
-                if (clocksTicking==0) {
+                Log.i ("MEDIA_SPLIT", mediaPlayer.getDuration()-seekBar.getProgress()+" millis");
+                if (mediaPlayer.getDuration()-seekBar.getProgress()<500) {
                     goNextSong();
                 }
             }
