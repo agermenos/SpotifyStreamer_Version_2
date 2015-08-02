@@ -13,6 +13,11 @@ public class TopHitsActivity extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_top_hits);
+        if (savedInstanceState==null){
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.fragment_top_hits, new TopHitsActivityFragment())
+                    .commit();
+        }
     }
 
 
