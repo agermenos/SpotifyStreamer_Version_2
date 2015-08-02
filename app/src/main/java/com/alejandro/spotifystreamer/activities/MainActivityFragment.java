@@ -55,6 +55,7 @@ public class MainActivityFragment extends Fragment {
                 getActivity().startActivity(intent);
             }
         });
+        // caca
 
         return rootView;
     }
