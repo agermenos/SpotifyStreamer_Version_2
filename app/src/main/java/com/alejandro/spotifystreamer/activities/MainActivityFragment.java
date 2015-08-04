@@ -13,7 +13,6 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.alejandro.spotifystreamer.adapters.ArtistAdapter;
-import com.alejandro.spotifystreamer.adapters.TopHitsAdapter;
 import com.alejandro.spotifystreamer.helpers.CustomTextWatcher;
 import com.example.alejandro.spotifystreamer.R;
 
@@ -21,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import kaaes.spotify.webapi.android.models.Artist;
-import kaaes.spotify.webapi.android.models.Track;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -55,8 +53,6 @@ public class MainActivityFragment extends Fragment {
                 getActivity().startActivity(intent);
             }
         });
-        // caca
-
         return rootView;
     }
 
@@ -90,4 +86,6 @@ public class MainActivityFragment extends Fragment {
             mArtistAdapter.notifyDataSetChanged();
         }
     }
+
+
 }

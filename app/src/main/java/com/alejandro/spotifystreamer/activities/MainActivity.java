@@ -1,22 +1,26 @@
 package com.alejandro.spotifystreamer.activities;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.example.alejandro.spotifystreamer.R;
 
-public class MainActivity extends FragmentActivity {
+public class MainActivity extends FragmentActivity implements  TopHitsActivityFragment.InnerCallback {
     private static final String TOP_HITS_FRAGMENTS_TAG = "THFTAG";
+
     private static boolean mTwoPane=false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if (findViewById(R.id.fragment_top_hits) != null) {
+        if (findViewById(R.id.player_detail_container) != null) {
             // The detail container view will be present only in the large-screen layouts
             // (res/layout-sw600dp). If this view is present, then the activity should be
             // in two-pane mode.
@@ -26,7 +30,7 @@ public class MainActivity extends FragmentActivity {
             // fragment transaction.
             if (savedInstanceState == null) {
                 getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.fragment_top_hits, new TopHitsActivityFragment(), TOP_HITS_FRAGMENTS_TAG)
+                        .replace(R.id.player_detail_container, new TopHitsActivityFragment(), TOP_HITS_FRAGMENTS_TAG)
                         .commit();
             }
         } else {
@@ -54,5 +58,27 @@ public class MainActivity extends FragmentActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onItemSelected(String artistSelected) {
+        if (mTwoPane) {
+            // In two-pane mode, show the detail view in this activity by
+            // adding or replacing the detail fragment using a
+            // fragment transaction.
+            Bundle args = new Bundle();
+            args.putString(TopHitsActivityFragment.ARTIST_SELECTED, artistSelected);
+
+            TopHitsActivityFragment fragment = new TopHitsActivityFragment();
+            fragment.setArguments(args);
+
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.player_detail_container, fragment, TOP_HITS_FRAGMENTS_TAG)
+                    .commit();
+        } else {
+            Intent intent = new Intent(this, TopHitsActivity.class)
+                    .putExtra(TopHitsActivityFragment.ARTIST_SELECTED, artistSelected);
+            startActivity(intent);
+        }
     }
 }

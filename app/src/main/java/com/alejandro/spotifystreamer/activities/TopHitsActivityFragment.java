@@ -36,8 +36,16 @@ import retrofit.client.Response;
 public class TopHitsActivityFragment extends Fragment {
     private static final String KEY="tracks";
     private static final String LOG_TAG = TopHitsActivityFragment.class.getSimpleName();
+    public static final String ARTIST_SELECTED="artist_selected";
     TopHitsAdapter topHitsAdapter;
     List<ParcelableTracks> pTracks;
+
+    public interface InnerCallback {
+        /**
+         * DetailFragmentCallback for when an item has been selected.
+         */
+        public void onItemSelected(String artistSelected);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -147,5 +155,8 @@ public class TopHitsActivityFragment extends Fragment {
         topHitsAdapter.clear();
         topHitsAdapter.addAll(tracks);
         topHitsAdapter.notifyDataSetChanged();
+    }
+
+    public class ARTIST_SELECTED {
     }
 }
