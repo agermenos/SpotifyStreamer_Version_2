@@ -29,6 +29,18 @@ public class MainActivityFragment extends Fragment {
     private static final String LOG_TAG = MainActivityFragment.class.getSimpleName();
     ArtistAdapter mArtistAdapter;
 
+    /**
+     * A callback interface that all activities containing this fragment must
+     * implement. This mechanism allows activities to be notified of item
+     * selections.
+     */
+    public interface Callback {
+        /**
+         * DetailFragmentCallback for when an item has been selected.
+         */
+        public void onItemSelected(String artistSelected);
+    }
+
     public MainActivityFragment() {
     }
 
@@ -48,9 +60,7 @@ public class MainActivityFragment extends Fragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(getActivity(), TopHitsActivity.class)
-                        .putExtra(Intent.EXTRA_TEXT, mArtistAdapter.getItem(position).id);
-                getActivity().startActivity(intent);
+                ((Callback)getActivity()).onItemSelected(mArtistAdapter.getItem(position).id);
             }
         });
         return rootView;

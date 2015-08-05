@@ -2,18 +2,15 @@ package com.alejandro.spotifystreamer.activities;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.example.alejandro.spotifystreamer.R;
 
-public class MainActivity extends FragmentActivity implements  TopHitsActivityFragment.InnerCallback {
+public class MainActivity extends FragmentActivity implements  MainActivityFragment.Callback {
     private static final String TOP_HITS_FRAGMENTS_TAG = "THFTAG";
-
     private static boolean mTwoPane=false;
 
     @Override

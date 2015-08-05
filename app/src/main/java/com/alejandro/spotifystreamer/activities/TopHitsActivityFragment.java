@@ -40,13 +40,6 @@ public class TopHitsActivityFragment extends Fragment {
     TopHitsAdapter topHitsAdapter;
     List<ParcelableTracks> pTracks;
 
-    public interface InnerCallback {
-        /**
-         * DetailFragmentCallback for when an item has been selected.
-         */
-        public void onItemSelected(String artistSelected);
-    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
