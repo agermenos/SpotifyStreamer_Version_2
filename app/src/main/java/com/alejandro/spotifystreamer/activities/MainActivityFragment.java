@@ -60,7 +60,8 @@ public class MainActivityFragment extends Fragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                ((Callback)getActivity()).onItemSelected(mArtistAdapter.getItem(position).id);
+                ((Callback)getActivity())
+                        .onItemSelected(mArtistAdapter.getItem(position).id);
             }
         });
         return rootView;

@@ -14,14 +14,8 @@ public class TopHitsActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_top_hits);
         if (savedInstanceState==null){
-            Bundle arguments = new Bundle();
-            arguments.putParcelable("SEARCH_TERMS", getIntent().getData());
-
-            TopHitsActivityFragment fragment = new TopHitsActivityFragment();
-            fragment.setArguments(arguments);
-
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.player_detail_container, fragment)
+                    .add(R.id.player_detail_container, new TopHitsActivityFragment())
                     .commit();
         }
     }
