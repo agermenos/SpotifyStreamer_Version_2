@@ -49,7 +49,7 @@ public class TopHitsActivityFragment extends Fragment {
             getTopHits(intent.getStringExtra(Intent.EXTRA_TEXT));
         }
         topHitsAdapter = new TopHitsAdapter(this.getActivity(), new ArrayList<ParcelableTracks>());
-        View rootView = inflater.inflate(R.layout.activity_top_hits, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_top_hits, container, false);
         ListView listView = (ListView)rootView.findViewById(R.id.listview_hits);
         listView.setAdapter(topHitsAdapter);
         if (savedInstanceState!=null && savedInstanceState.containsKey(KEY)){

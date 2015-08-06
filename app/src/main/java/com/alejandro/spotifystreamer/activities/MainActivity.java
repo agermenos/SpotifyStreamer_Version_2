@@ -64,7 +64,7 @@ public class MainActivity extends FragmentActivity implements  MainActivityFragm
             // adding or replacing the detail fragment using a
             // fragment transaction.
             Bundle args = new Bundle();
-            args.putString(TopHitsActivityFragment.ARTIST_SELECTED, artistSelected);
+            args.putString(Intent.EXTRA_TEXT, artistSelected);
 
             TopHitsActivityFragment fragment = new TopHitsActivityFragment();
             fragment.setArguments(args);
@@ -74,7 +74,7 @@ public class MainActivity extends FragmentActivity implements  MainActivityFragm
                     .commit();
         } else {
             Intent intent = new Intent(this, TopHitsActivity.class)
-                    .putExtra(TopHitsActivityFragment.ARTIST_SELECTED, artistSelected);
+                    .putExtra(Intent.EXTRA_TEXT, artistSelected);
             startActivity(intent);
         }
     }
