@@ -44,8 +44,12 @@ public class TopHitsActivityFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Get the message from the intent
+        Bundle arguments = getArguments();
         Intent intent = getActivity().getIntent();
-        if( savedInstanceState == null){
+        if (arguments != null && arguments.getString(Intent.EXTRA_TEXT)!=null) {
+            getTopHits(arguments.getString(Intent.EXTRA_TEXT));
+        }
+        else if( savedInstanceState == null && intent.getStringExtra(Intent.EXTRA_TEXT)!=null){
             getTopHits(intent.getStringExtra(Intent.EXTRA_TEXT));
         }
         topHitsAdapter = new TopHitsAdapter(this.getActivity(), new ArrayList<ParcelableTracks>());
