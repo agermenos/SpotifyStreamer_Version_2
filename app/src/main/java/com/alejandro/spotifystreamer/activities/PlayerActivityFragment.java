@@ -1,5 +1,6 @@
 package com.alejandro.spotifystreamer.activities;
 
+import android.app.DialogFragment;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -26,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class PlayerActivityFragment extends Fragment {
+public class PlayerActivityFragment extends DialogFragment {
     private static MediaPlayer mediaPlayer;
     private static SeekBar seekBar;
     private boolean isPlaying=true;

@@ -2,18 +2,14 @@ package com.alejandro.spotifystreamer.activities;
 
 import android.app.Fragment;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.Toast;
+import android.widget.*;
 
 import com.alejandro.spotifystreamer.adapters.ArtistAdapter;
-import com.alejandro.spotifystreamer.helpers.CustomTextWatcher;
+import com.alejandro.spotifystreamer.tasks.FindArtistTask;
 import com.example.alejandro.spotifystreamer.R;
 
 import java.util.ArrayList;
@@ -38,7 +34,7 @@ public class MainActivityFragment extends Fragment {
         /**
          * DetailFragmentCallback for when an item has been selected.
          */
-        public void onItemSelected(String artistSelected);
+        void onItemSelected(String artistSelected);
     }
 
     public MainActivityFragment() {
@@ -50,8 +46,22 @@ public class MainActivityFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-        EditText queryText = (EditText)rootView.findViewById(R.id.query_text);
-        queryText.addTextChangedListener(new CustomTextWatcher(this));
+        SearchView queryText = (SearchView)rootView.findViewById(R.id.search_artist);
+        final MainActivityFragment current = this;
+        queryText.setOnQueryTextListener(
+                new SearchView.OnQueryTextListener() {
+                    @Override
+                    public boolean onQueryTextSubmit(String query) {
+                        FindArtistTask fat = new FindArtistTask(current);
+                        fat.execute(query);
+                        return true;
+                    }
+
+                    @Override
+                    public boolean onQueryTextChange(String newText) {
+                        return onQueryTextSubmit(newText);
+                    }
+                });
 
         mArtistAdapter = new ArtistAdapter(this.getActivity(), new ArrayList<Artist>());
 
