@@ -52,15 +52,14 @@ public class PlayerActivityFragment extends DialogFragment {
     @Override
     public synchronized View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        if (mediaPlayer==null) {
-            mediaPlayer = new MediaPlayer();
-        }
-        else {
+        if (mediaPlayer!=null) {
             if (mediaPlayer.isPlaying()) {
                 mediaPlayer.stop();
                 mediaPlayer.reset();
             }
         }
+        mediaPlayer = new MediaPlayer();
+
         Intent intent = getActivity().getIntent();
         pTracks = intent.getParcelableArrayListExtra("tracks");
         currentSong = intent.getIntExtra("position", 0);
