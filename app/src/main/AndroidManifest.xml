@@ -28,6 +28,7 @@
             android:label="@string/title_activity_player"
             android:theme="@android:style/Theme.Holo.DialogWhenLarge" >
         </activity>
+        <service android:name="com.alejandro.spotifystreamer.services.MediaService"/>
     </application>
 
 </manifest>
