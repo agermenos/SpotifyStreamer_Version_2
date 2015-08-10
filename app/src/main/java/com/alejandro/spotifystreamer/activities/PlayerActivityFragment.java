@@ -1,13 +1,12 @@
 package com.alejandro.spotifystreamer.activities;
 
 import android.app.DialogFragment;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.os.CountDownTimer;
-import android.support.v4.app.Fragment;
+import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.util.Log;
+import android.os.IBinder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,19 +16,19 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.alejandro.spotifystreamer.helpers.ParcelableTracks;
+import com.alejandro.spotifystreamer.helpers.PlayerConstants;
+import com.alejandro.spotifystreamer.services.MediaService;
 import com.example.alejandro.spotifystreamer.R;
 import com.squareup.picasso.Picasso;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * A placeholder fragment containing a simple view.
+ * A placeholder fragment containing a simple view. Being a Dialog Fragment, it can be displayed as a dialog
  */
-public class PlayerActivityFragment extends DialogFragment {
-    private static MediaPlayer mediaPlayer;
-    private static SeekBar seekBar;
+public class PlayerActivityFragment extends DialogFragment implements PlayerConstants{
+    private SeekBar seekBar;
     private boolean isPlaying=true;
     private final static String LOG_TAG=PlayerActivityFragment.class.getSimpleName();
     private static final int TIME_DIFFERENTIAL=50;
@@ -45,6 +44,8 @@ public class PlayerActivityFragment extends DialogFragment {
     private View rootView;
     private static int currentSong;
     private static boolean userTracking;
+    private boolean mBound = false;
+    MediaService mediaService;
 
     public PlayerActivityFragment() {
     }
@@ -52,15 +53,8 @@ public class PlayerActivityFragment extends DialogFragment {
     @Override
     public synchronized View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        if (mediaPlayer!=null) {
-            if (mediaPlayer.isPlaying()) {
-                mediaPlayer.stop();
-                mediaPlayer.reset();
-            }
-        }
-        mediaPlayer = new MediaPlayer();
-
         Intent intent = getActivity().getIntent();
+
         pTracks = intent.getParcelableArrayListExtra("tracks");
         currentSong = intent.getIntExtra("position", 0);
         ParcelableTracks pTrack = pTracks.get(currentSong);
@@ -80,8 +74,12 @@ public class PlayerActivityFragment extends DialogFragment {
         startTime.setText(getTime(0));
         ImageButton forwardButton = (ImageButton)rootView.findViewById(R.id.forward_button);
         seekBar = (SeekBar)rootView.findViewById(R.id.seekBar);
-        startMediaPlayer(pTrack.previewUrl);
 
+        /*
+        Setting the Media Service properties
+         */
+        Intent serviceIntent = new Intent(this.getActivity(), MediaService.class);
+        getActivity().bindService(serviceIntent, mConnection, Context.BIND_ADJUST_WITH_ACTIVITY);
         loadPlayerUI(pTrack);
 
         /**
@@ -100,8 +98,7 @@ public class PlayerActivityFragment extends DialogFragment {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                mediaPlayer.seekTo(seekBar.getProgress());
-                startSong();
+                //mediaPlayer.seekTo(seekBar.getProgress());
                 userTracking=false;
                 setPlayPause();
             }
@@ -109,7 +106,6 @@ public class PlayerActivityFragment extends DialogFragment {
         prevButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mediaPlayer.reset();
                 if (currentSong>0) {
                     currentSong--;
                 }
@@ -118,7 +114,6 @@ public class PlayerActivityFragment extends DialogFragment {
                 }
                 ParcelableTracks pTrack = pTracks.get(currentSong);
                 loadPlayerUI(pTrack);
-                startMediaPlayer(pTrack.previewUrl);
             }
         });
 
@@ -126,7 +121,6 @@ public class PlayerActivityFragment extends DialogFragment {
             @Override
             public void onClick(View v) {
                     isPlaying=true;
-                    startSong();
                     setPlayPause();
             }
         });
@@ -135,7 +129,6 @@ public class PlayerActivityFragment extends DialogFragment {
             @Override
             public void onClick(View v) {
                 isPlaying=false;
-                mediaPlayer.pause();
                 setPlayPause();
             }
         });
@@ -159,7 +152,6 @@ public class PlayerActivityFragment extends DialogFragment {
     }
 
     private void goNextSong() {
-        mediaPlayer.reset();
         if (currentSong==pTracks.size() - 1) {
             currentSong=0;
         }
@@ -168,7 +160,6 @@ public class PlayerActivityFragment extends DialogFragment {
         }
         ParcelableTracks pTrack = pTracks.get(currentSong);
         loadPlayerUI(pTrack);
-        startMediaPlayer(pTrack.previewUrl);
     }
 
     private void loadPlayerUI(ParcelableTracks pTrack) {
@@ -192,61 +183,28 @@ public class PlayerActivityFragment extends DialogFragment {
         }
     }
 
-    private void startMediaPlayer(String url){
-        isPlaying=true;
-        userTracking = false;
-        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        setPlayPause();
-        try {
-            mediaPlayer.setDataSource(url);
-            mediaPlayer.prepareAsync();
-
-
-
-            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                @Override
-                public void onPrepared(MediaPlayer mp) {
-                    endTime.setText(getTime(mediaPlayer.getDuration()));
-                    seekBar.setMax(mediaPlayer.getDuration());
-                    startSong();
-                }
-            });
-
-            mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-                @Override
-                public boolean onError(MediaPlayer mp, int what, int extra) {
-                 Log.e(LOG_TAG, "Error searching for the track: " + what + ":"+ extra);
-                 return false;
-                }
-            });
+    private ServiceConnection mConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            MediaService.PlayerBinder binder = (MediaService.PlayerBinder) service;
+            mediaService = binder.getService();
+            mediaService.setEndText(endTime);
+            mediaService.setStartText(startTime);
+            mediaService.setSeekBar(seekBar);
+            mBound = true;
         }
-        catch (IOException ioException) {
-            Log.e(LOG_TAG, ioException.getMessage());
-        }
-    }
 
-    /**
-     * Starts the player, and at the same time, starts the progress bar
-     */
-    private void startSong() {
-        isPlaying = true;
-        int duration = mediaPlayer.getDuration() - mediaPlayer.getCurrentPosition();
-        new CountDownTimer(duration, TIME_DIFFERENTIAL) {
-            public void onTick(long millisUntilFinished) {
-                if (mediaPlayer.isPlaying() && !userTracking) {
-                    seekBar.setProgress(mediaPlayer.getCurrentPosition());
-                    startTime.setText(getTime(mediaPlayer.getCurrentPosition()));
-                }
-            }
-            public void onFinish() {
-                Log.i ("MEDIA_SPLIT", mediaPlayer.getDuration()-seekBar.getProgress()+" millis");
-                if (mediaPlayer.getDuration()-seekBar.getProgress()<500) {
-                    goNextSong();
-                }
-            }
-        }.start();
-        mediaPlayer.start();
-    }
+        @Override
+        public void onServiceDisconnected(ComponentName className) {
+            // This is called when the connection with the service has been
+            // unexpectedly disconnected -- that is, its process crashed.
+            mediaService = null;
+            mBound = false;
+        }
+    };
+
+
+
 
 }
 
