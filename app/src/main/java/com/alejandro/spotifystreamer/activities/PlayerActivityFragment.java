@@ -5,6 +5,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.view.LayoutInflater;
@@ -21,6 +23,7 @@ import com.alejandro.spotifystreamer.services.MediaService;
 import com.example.alejandro.spotifystreamer.R;
 import com.squareup.picasso.Picasso;
 
+import java.net.URL;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -45,7 +48,7 @@ public class PlayerActivityFragment extends DialogFragment implements PlayerCons
     private static int currentSong;
     private static boolean userTracking;
     private boolean mBound = false;
-    MediaService mediaService;
+    protected ComponentName mediaService;
 
     public PlayerActivityFragment() {
     }
@@ -78,9 +81,12 @@ public class PlayerActivityFragment extends DialogFragment implements PlayerCons
         /*
         Setting the Media Service properties
          */
+
         Intent serviceIntent = new Intent(this.getActivity(), MediaService.class);
-        getActivity().bindService(serviceIntent, mConnection, Context.BIND_ADJUST_WITH_ACTIVITY);
-        loadPlayerUI(pTrack);
+        Bundle bundle = new Bundle();
+        bundle.putInt(COMMAND, ACTION_INITIALIZE);
+        bundle.putString(MEDIA_URL, pTrack.url);
+        mediaService = getActivity().startService(serviceIntent);
 
         /**
          *          Setting behavior
@@ -93,13 +99,13 @@ public class PlayerActivityFragment extends DialogFragment implements PlayerCons
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                userTracking=true;
+                userTracking = true;
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 //mediaPlayer.seekTo(seekBar.getProgress());
-                userTracking=false;
+                userTracking = false;
                 setPlayPause();
             }
         });
@@ -182,30 +188,6 @@ public class PlayerActivityFragment extends DialogFragment implements PlayerCons
             pauseButton.setVisibility(ImageButton.GONE);
         }
     }
-
-    private ServiceConnection mConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            MediaService.PlayerBinder binder = (MediaService.PlayerBinder) service;
-            mediaService = binder.getService();
-            mediaService.setEndText(endTime);
-            mediaService.setStartText(startTime);
-            mediaService.setSeekBar(seekBar);
-            mBound = true;
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName className) {
-            // This is called when the connection with the service has been
-            // unexpectedly disconnected -- that is, its process crashed.
-            mediaService = null;
-            mBound = false;
-        }
-    };
-
-
-
-
 }
 
 
