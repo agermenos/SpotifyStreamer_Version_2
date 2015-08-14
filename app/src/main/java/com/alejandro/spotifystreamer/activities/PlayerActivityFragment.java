@@ -48,7 +48,7 @@ public class PlayerActivityFragment extends DialogFragment implements PlayerCons
     private static int currentSong;
     private static boolean userTracking;
     private boolean mBound = false;
-    protected ComponentName mediaService;
+    protected MediaService mediaService;
 
     public PlayerActivityFragment() {
     }
@@ -82,13 +82,28 @@ public class PlayerActivityFragment extends DialogFragment implements PlayerCons
         Setting the Media Service properties
          */
 
+        ServiceConnection mConnection = new ServiceConnection() {
+
+            public void onServiceConnected(ComponentName className,
+                                           IBinder binder) {
+                MediaService.MyBinder b = (MediaService.MyBinder) binder;
+                mediaService = b.getService();
+
+            }
+
+            public void onServiceDisconnected(ComponentName className) {
+                mediaService = null;
+            }
+        };
+
+        /**
         Intent serviceIntent = new Intent(this.getActivity(), MediaService.class);
         Bundle bundle = new Bundle();
         bundle.putInt(COMMAND, ACTION_INITIALIZE);
         bundle.putString(MEDIA_URL, pTrack.previewUrl);
         serviceIntent.putExtra(DATA, bundle);
         mediaService = getActivity().startService(serviceIntent);
-
+        */
         /**
          *          Setting behavior
          */
@@ -129,6 +144,9 @@ public class PlayerActivityFragment extends DialogFragment implements PlayerCons
             public void onClick(View v) {
                     isPlaying=true;
                     setPlayPause();
+                    if (mediaService!=null){
+                        setPlayPause();
+                    }
             }
         });
 

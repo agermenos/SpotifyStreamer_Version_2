@@ -1,10 +1,12 @@
 package com.alejandro.spotifystreamer.services;
 
 import android.app.IntentService;
+import android.app.Service;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.*;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.alejandro.spotifystreamer.helpers.PlayerConstants;
@@ -14,27 +16,16 @@ import java.io.IOException;
 /**
  * Created by Alejandro on 8/9/2015.
  */
-public class MediaService extends IntentService implements PlayerConstants {
+public class MediaService extends Service implements PlayerConstants {
 
     MediaPlayer mediaPlayer = null;
     private boolean isPlaying=false;
     private static final String LOG_TAG = MediaService.class.getSimpleName();
+    private final IBinder mBinder = new MyBinder();
 
-    /**
-     * Creates an IntentService.  Invoked by your subclass's constructor.
-     *
-     * @param name Used to name the worker thread, important only for debugging.
-     */
-    public MediaService(String name) {
-        super(name);
-    }
-
-    public MediaService(){
-        super("test");
-    }
-
+    @Nullable
     @Override
-    protected void onHandleIntent(Intent intent) {
+    public IBinder onBind(Intent intent) {
         Bundle data = intent.getBundleExtra(DATA);
         Integer instruction = data.getInt(COMMAND);
         switch (instruction){
@@ -43,6 +34,11 @@ public class MediaService extends IntentService implements PlayerConstants {
                 startMediaPlayer(url);
                 break;
         }
+        return mBinder;
+    }
+
+    protected void onHandleIntent(Intent intent) {
+
     }
 
     private void startMediaPlayer(String url){
@@ -69,6 +65,12 @@ public class MediaService extends IntentService implements PlayerConstants {
         }
         catch (IOException ioException) {
             Log.e(LOG_TAG, ioException.getMessage());
+        }
+    }
+
+    public class MyBinder extends Binder {
+        public MediaService getService() {
+            return MediaService.this;
         }
     }
 }
