@@ -22,29 +22,18 @@ public class MediaService extends Service implements PlayerConstants {
     private boolean isPlaying=false;
     private static final String LOG_TAG = MediaService.class.getSimpleName();
     private final IBinder mBinder = new MyBinder();
+    private int currentPosition=0;
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        Bundle data = intent.getBundleExtra(DATA);
-        Integer instruction = data.getInt(COMMAND);
-        switch (instruction){
-            case ACTION_INITIALIZE:
-                String url = data.getString(MEDIA_URL);
-                startMediaPlayer(url);
-                break;
-        }
+        mediaPlayer = new MediaPlayer();
+        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         return mBinder;
     }
 
-    protected void onHandleIntent(Intent intent) {
-
-    }
-
-    private void startMediaPlayer(String url){
+    public void startMediaPlayer(String url){
         isPlaying=true;
-        mediaPlayer = new MediaPlayer();
-        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         try {
             mediaPlayer.setDataSource(url);
             mediaPlayer.prepare();
@@ -52,6 +41,7 @@ public class MediaService extends Service implements PlayerConstants {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
                     mediaPlayer.start();
+                    currentPosition=0;
                 }
             });
 
@@ -65,6 +55,26 @@ public class MediaService extends Service implements PlayerConstants {
         }
         catch (IOException ioException) {
             Log.e(LOG_TAG, ioException.getMessage());
+        }
+    }
+
+    public void playFromPosition(int position){
+        if (mediaPlayer!=null){
+            mediaPlayer.seekTo(position);
+            mediaPlayer.start();
+        }
+    }
+
+    public void pauseMediaPlayer(){
+        if (mediaPlayer!=null && mediaPlayer.isPlaying()){
+            currentPosition=mediaPlayer.getCurrentPosition();
+            mediaPlayer.stop();
+        }
+    }
+
+    public void stopMediaPlayer(){
+        if (mediaPlayer!=null && mediaPlayer.isPlaying()){
+            mediaPlayer.stop();
         }
     }
 

@@ -60,7 +60,7 @@ public class PlayerActivityFragment extends DialogFragment implements PlayerCons
 
         pTracks = intent.getParcelableArrayListExtra("tracks");
         currentSong = intent.getIntExtra("position", 0);
-        ParcelableTracks pTrack = pTracks.get(currentSong);
+        final ParcelableTracks pTrack = pTracks.get(currentSong);
 
         // Finding stuff on the layout
         rootView = inflater.inflate(R.layout.fragment_player, container, false);
@@ -78,35 +78,25 @@ public class PlayerActivityFragment extends DialogFragment implements PlayerCons
         ImageButton forwardButton = (ImageButton)rootView.findViewById(R.id.forward_button);
         seekBar = (SeekBar)rootView.findViewById(R.id.seekBar);
 
-        /*
-        Setting the Media Service properties
-         */
-
         ServiceConnection mConnection = new ServiceConnection() {
 
             public void onServiceConnected(ComponentName className,
                                            IBinder binder) {
                 MediaService.MyBinder b = (MediaService.MyBinder) binder;
                 mediaService = b.getService();
+                mBound=true;
 
             }
 
             public void onServiceDisconnected(ComponentName className) {
                 mediaService = null;
+                mBound=false;
             }
         };
 
-        /**
-        Intent serviceIntent = new Intent(this.getActivity(), MediaService.class);
-        Bundle bundle = new Bundle();
-        bundle.putInt(COMMAND, ACTION_INITIALIZE);
-        bundle.putString(MEDIA_URL, pTrack.previewUrl);
-        serviceIntent.putExtra(DATA, bundle);
-        mediaService = getActivity().startService(serviceIntent);
-        */
-        /**
-         *          Setting behavior
-         */
+        Intent musicIntent = new Intent(this.getActivity(), MediaService.class);
+        getActivity().bindService(musicIntent, mConnection, Context.BIND_AUTO_CREATE);
+
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -146,6 +136,7 @@ public class PlayerActivityFragment extends DialogFragment implements PlayerCons
                     setPlayPause();
                     if (mediaService!=null){
                         setPlayPause();
+                        mediaService.startMediaPlayer(pTrack.previewUrl);
                     }
             }
         });
