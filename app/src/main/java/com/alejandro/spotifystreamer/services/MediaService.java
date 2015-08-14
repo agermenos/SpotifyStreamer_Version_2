@@ -1,19 +1,14 @@
 package com.alejandro.spotifystreamer.services;
 
 import android.app.IntentService;
-import android.app.Service;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.*;
 import android.util.Log;
-import android.widget.SeekBar;
-import android.widget.TextView;
 
 import com.alejandro.spotifystreamer.helpers.PlayerConstants;
 
-import java.io.FileDescriptor;
 import java.io.IOException;
 
 /**
@@ -52,10 +47,11 @@ public class MediaService extends IntentService implements PlayerConstants {
 
     private void startMediaPlayer(String url){
         isPlaying=true;
+        mediaPlayer = new MediaPlayer();
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         try {
             mediaPlayer.setDataSource(url);
-            mediaPlayer.prepareAsync();
+            mediaPlayer.prepare();
             mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {

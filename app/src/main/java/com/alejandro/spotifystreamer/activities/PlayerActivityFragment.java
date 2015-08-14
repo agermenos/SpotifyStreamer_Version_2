@@ -85,7 +85,8 @@ public class PlayerActivityFragment extends DialogFragment implements PlayerCons
         Intent serviceIntent = new Intent(this.getActivity(), MediaService.class);
         Bundle bundle = new Bundle();
         bundle.putInt(COMMAND, ACTION_INITIALIZE);
-        bundle.putString(MEDIA_URL, pTrack.url);
+        bundle.putString(MEDIA_URL, pTrack.previewUrl);
+        serviceIntent.putExtra(DATA, bundle);
         mediaService = getActivity().startService(serviceIntent);
 
         /**
