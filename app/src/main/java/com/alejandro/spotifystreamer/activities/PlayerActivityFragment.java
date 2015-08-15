@@ -32,8 +32,6 @@ import java.util.concurrent.TimeUnit;
  * A placeholder fragment containing a simple view.
  */
 public class PlayerActivityFragment extends DialogFragment {
-    private static final boolean FROM_SCRATCH = false;
-    private static final boolean FROM_PREVIOUS = true;
     private static final String CURRENT_SONG = "current_song";
     private static SeekBar seekBar;
     private final static String LOG_TAG=PlayerActivityFragment.class.getSimpleName();
@@ -112,7 +110,7 @@ public class PlayerActivityFragment extends DialogFragment {
             };
 
             Intent musicIntent = new Intent(this.getActivity(), MediaService.class);
-            ComponentName myService = getActivity().startService(new Intent(this.getActivity(), MediaService.class));
+            getActivity().startService(new Intent(this.getActivity(), MediaService.class));
             getActivity().bindService(musicIntent, mConnection, Context.BIND_AUTO_CREATE);
         }
 
@@ -135,7 +133,7 @@ public class PlayerActivityFragment extends DialogFragment {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 mediaService.mediaPlayer.seekTo(seekBar.getProgress());
-                startSong(FROM_PREVIOUS);
+                startSong();
                 userTracking=false;
                 setPlayPause();
             }
@@ -159,7 +157,7 @@ public class PlayerActivityFragment extends DialogFragment {
         playButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                    startSong(FROM_PREVIOUS);
+                    startSong();
                     setPlayPause();
             }
         });
@@ -259,7 +257,7 @@ public class PlayerActivityFragment extends DialogFragment {
                     public void onPrepared(MediaPlayer mp) {
                         endTime.setText(getTime(mediaService.mediaPlayer.getDuration()));
                         seekBar.setMax(mediaService.mediaPlayer.getDuration());
-                        startSong(FROM_SCRATCH);
+                        startSong();
                     }
                 });
 
@@ -273,7 +271,7 @@ public class PlayerActivityFragment extends DialogFragment {
             }
             else {
                 setSongStatus();
-                startSong(FROM_PREVIOUS);
+                startSong();
             }
         }
         catch (IOException ioException) {
@@ -289,7 +287,7 @@ public class PlayerActivityFragment extends DialogFragment {
     /**
      * Starts the player, and at the same time, starts the progress bar
      */
-    private void startSong(boolean restart) {
+    private void startSong() {
         int duration = mediaService.mediaPlayer.getDuration() - mediaService.mediaPlayer.getCurrentPosition();
         new CountDownTimer(duration, TIME_DIFFERENTIAL) {
             public void onTick(long millisUntilFinished) {
