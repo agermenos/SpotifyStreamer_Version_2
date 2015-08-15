@@ -34,6 +34,7 @@ import java.util.concurrent.TimeUnit;
 public class PlayerActivityFragment extends DialogFragment {
     private static final boolean FROM_SCRATCH = false;
     private static final boolean FROM_PREVIOUS = true;
+    private static final String CURRENT_SONG = "current_song";
     private static SeekBar seekBar;
     private final static String LOG_TAG=PlayerActivityFragment.class.getSimpleName();
     private static final int TIME_DIFFERENTIAL=50;
@@ -50,6 +51,7 @@ public class PlayerActivityFragment extends DialogFragment {
     private static int currentSong;
     private static boolean userTracking;
     private MediaService mediaService;
+    private boolean reset=false;
     ServiceConnection mConnection;
 
     public PlayerActivityFragment() {
@@ -58,7 +60,8 @@ public class PlayerActivityFragment extends DialogFragment {
     @Override
     public synchronized View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        if (mediaService!=null && mediaService.mediaPlayer!=null) {
+        reset=(savedInstanceState==null);
+        if (savedInstanceState==null && mediaService!=null) {
             if (mediaService.mediaPlayer.isPlaying()) {
                 mediaService.mediaPlayer.stop();
                 mediaService.mediaPlayer.reset();
@@ -69,7 +72,12 @@ public class PlayerActivityFragment extends DialogFragment {
 
         Intent intent = getActivity().getIntent();
         pTracks = intent.getParcelableArrayListExtra("tracks");
-        currentSong = intent.getIntExtra("position", 0);
+        if (savedInstanceState==null) {
+            currentSong = intent.getIntExtra("position", 0);
+        }
+        else {
+            currentSong = savedInstanceState.getInt(CURRENT_SONG);
+        }
         final ParcelableTracks pTrack = pTracks.get(currentSong);
 
         // Finding stuff on the layout
@@ -174,6 +182,12 @@ public class PlayerActivityFragment extends DialogFragment {
         return rootView;
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putInt(CURRENT_SONG,currentSong);
+        super.onSaveInstanceState(outState);
+    }
+
     private String getTime(int milliseconds) {
         return String.format("%02d:%02d",
                 TimeUnit.MILLISECONDS.toMinutes(milliseconds),
@@ -190,6 +204,7 @@ public class PlayerActivityFragment extends DialogFragment {
         else {
             currentSong++;
         }
+
         ParcelableTracks pTrack = pTracks.get(currentSong);
         loadPlayerUI(pTrack);
         startMediaPlayer(pTrack.previewUrl);
@@ -232,7 +247,10 @@ public class PlayerActivityFragment extends DialogFragment {
         mediaService.mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         setPlayPause();
         try {
-            if (!mediaService.mediaPlayer.isPlaying()) {
+            if (reset) {
+                if (mediaService!=null && mediaService.mediaPlayer.isPlaying()){
+                    mediaService.mediaPlayer.stop();
+                }
                 mediaService.resetMediaPlayer();
                 mediaService.mediaPlayer.setDataSource(url);
                 mediaService.mediaPlayer.prepareAsync();
