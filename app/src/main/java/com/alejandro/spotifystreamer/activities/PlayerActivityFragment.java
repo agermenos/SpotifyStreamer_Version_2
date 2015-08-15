@@ -1,12 +1,17 @@
 package com.alejandro.spotifystreamer.activities;
 
+import android.annotation.TargetApi;
 import android.app.DialogFragment;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.os.Build;
 import android.os.CountDownTimer;
 import android.os.IBinder;
 import android.os.Bundle;
@@ -213,6 +218,7 @@ public class PlayerActivityFragment extends DialogFragment {
         album.setText(pTrack.album);
         artist.setText(pTrack.artist);
         Picasso.with(getActivity()).load(pTrack.url).into(picture);
+        // createNotification(pTrack);
     }
 
     @Override
@@ -307,6 +313,26 @@ public class PlayerActivityFragment extends DialogFragment {
         mediaService.mediaPlayer.start();
         setPlayPause();
     }
+
+   /* @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    public void createNotification(ParcelableTracks pTrack) {
+        // Prepare intent which is triggered if the
+        // notification is selected
+        Intent intent = new Intent(getActivity(), this.getActivity().getClass());
+        PendingIntent pIntent = PendingIntent.getActivity(getActivity(), 0, intent, 0);
+
+        // Build notification
+        // Actions are just fake
+        Notification noti = new Notification.Builder(getActivity())
+                .setContentTitle("Playing " + pTrack.name)
+                .setContentText("Now Playing").setSmallIcon(R.drawable.notification_template_icon_bg)
+                .setContentIntent(pIntent).build();
+        NotificationManager notificationManager = (NotificationManager) getActivity().getSystemService(getActivity().NOTIFICATION_SERVICE);
+        // hide the notification after its selected
+        noti.flags |= Notification.FLAG_AUTO_CANCEL;
+        notificationManager.notify(0, noti);
+
+    }*/
 
 }
 

@@ -153,7 +153,4 @@ public class TopHitsActivityFragment extends Fragment {
         topHitsAdapter.addAll(tracks);
         topHitsAdapter.notifyDataSetChanged();
     }
-
-    public class ARTIST_SELECTED {
-    }
 }
