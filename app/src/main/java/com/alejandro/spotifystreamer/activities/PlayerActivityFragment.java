@@ -38,7 +38,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class PlayerActivityFragment extends DialogFragment {
     private static final String CURRENT_SONG = "current_song";
-    private static SeekBar seekBar;
+    private SeekBar seekBar;
     private final static String LOG_TAG=PlayerActivityFragment.class.getSimpleName();
     private static final int TIME_DIFFERENTIAL=50;
     private ImageButton playButton;
@@ -51,7 +51,7 @@ public class PlayerActivityFragment extends DialogFragment {
     private TextView endTime;
     private ImageView picture;
     private View rootView;
-    private static int currentSong;
+    private int currentSong;
     private static boolean userTracking;
     private MediaService mediaService;
     private boolean reset=false;
